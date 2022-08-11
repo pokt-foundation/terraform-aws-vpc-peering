@@ -8,6 +8,13 @@ resource "aws_vpc_peering_connection" "this" {
   vpc_id        = var.this_vpc_id
   peer_region   = data.aws_region.peer.name
   tags          = merge({ "Side" = "Requester"}, var.tags)
+
+  lifecycle {
+		ignore_changes = [
+      peer_owner_id,
+      peer_region
+		]
+    }
   # hardcoded
   timeouts {
     create = "15m"
@@ -23,6 +30,12 @@ resource "aws_vpc_peering_connection_accepter" "peer_accepter" {
   vpc_peering_connection_id = aws_vpc_peering_connection.this.id
   auto_accept               = var.auto_accept_peering
   tags                      = merge({ "Side" = "Accepter"}, var.tags) 
+
+  lifecycle {
+		ignore_changes = [
+      vpc_peering_connection_id
+		]
+    }
 }
 
 #######################
@@ -37,6 +50,12 @@ resource "aws_vpc_peering_connection_options" "this" {
     allow_classic_link_to_remote_vpc = var.this_link_to_peer_classic
     allow_vpc_to_remote_classic_link = var.this_link_to_local_classic
   }
+
+  lifecycle {
+		ignore_changes = [
+      vpc_peering_connection_id
+		]
+    }
 }
 
 resource "aws_vpc_peering_connection_options" "accepter" {
@@ -48,6 +67,12 @@ resource "aws_vpc_peering_connection_options" "accepter" {
     allow_classic_link_to_remote_vpc = var.peer_link_to_peer_classic
     allow_vpc_to_remote_classic_link = var.peer_link_to_local_classic
   }
+
+  lifecycle {
+		ignore_changes = [
+      vpc_peering_connection_id
+		]
+    }
 }
 
 ###################
@@ -78,4 +103,10 @@ resource "aws_route" "peer_routes" {
   route_table_id            = local.peer_routes[count.index].rts_id
   destination_cidr_block    = local.peer_routes[count.index].dest_cidr
   vpc_peering_connection_id = aws_vpc_peering_connection.this.id
+
+    lifecycle {
+		ignore_changes = [
+      destination_cidr_block
+		]
+    }
 }
