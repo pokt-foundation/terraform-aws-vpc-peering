@@ -60,6 +60,12 @@ resource "aws_route" "this_routes" {
   route_table_id            = local.this_routes[count.index].rts_id
   destination_cidr_block    = local.this_routes[count.index].dest_cidr
   vpc_peering_connection_id = aws_vpc_peering_connection.this.id
+  
+  	lifecycle {
+		ignore_changes = [
+      destination_cidr_block
+		]
+    }
 }
 
 ###################
